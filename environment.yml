@@ -1,4 +1,4 @@
-name: /gpfs/igmmfs01/eddie/boulter-lab/Hugh/mutation_nlp/env
+name: nlp_env
 channels:
   - anaconda
   - conda-forge
@@ -53,5 +53,4 @@ dependencies:
     - scipy==1.8.1
     - setuptools==62.3.2
     - urllib3==1.26.9
-prefix: /gpfs/igmmfs01/eddie/boulter-lab/Hugh/mutation_nlp/env
 
