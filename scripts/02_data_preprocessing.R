@@ -33,3 +33,5 @@ data <- raw_data %>%
     abstract,
     gene_type
   )
+
+write_csv(data, "./data//02_data_preprocessing/processed_data.csv")
