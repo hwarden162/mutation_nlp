@@ -1,8 +1,11 @@
+# Importing Packages ------------------------------------------------------
 library(tidyverse)
 
+# Importing Data ----------------------------------------------------------
 raw_data <- read.csv("./data/data.csv", sep = "\t") %>%
   as_tibble()
 
+# Processing Data ---------------------------------------------------------
 data <- raw_data %>%
   group_by(
     pubmed_id,
@@ -34,4 +37,5 @@ data <- raw_data %>%
     gene_type
   )
 
+# Saving Data -------------------------------------------------------------
 write_csv(data, "./data//02_data_preprocessing/processed_data.csv")
