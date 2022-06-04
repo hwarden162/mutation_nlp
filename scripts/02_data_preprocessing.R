@@ -7,6 +7,9 @@ raw_data <- read.csv("./data/data.csv", sep = "\t") %>%
 
 # Processing Data ---------------------------------------------------------
 data <- raw_data %>%
+  mutate(
+    pubmed_id = factor(pubmed_id)
+  ) %>%
   group_by(
     pubmed_id,
     abstract,
