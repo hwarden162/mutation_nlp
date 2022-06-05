@@ -2,7 +2,7 @@
 library(tidyverse)
 
 # Importing Data ----------------------------------------------------------
-raw_data <- read.csv("./data/data.csv", sep = "\t") %>%
+raw_data <- read.csv("./data/01_data_collection/raw_data.csv", sep = "\t") %>%
   as_tibble()
 
 # Processing Data ---------------------------------------------------------
