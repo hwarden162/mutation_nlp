@@ -13,13 +13,14 @@ data <- raw_data %>%
   group_by(
     pubmed_id,
     abstract,
+    title,
     gene_type
   ) %>%
   summarise(
     count = n()
   ) %>%
   pivot_wider(
-    id_cols = c(pubmed_id, abstract),
+    id_cols = c(pubmed_id, abstract, title),
     names_from = gene_type,
     values_from = count
   ) %>%
@@ -37,8 +38,9 @@ data <- raw_data %>%
   select(
     pubmed_id,
     abstract,
+    title,
     gene_type
   )
 
 # Saving Data -------------------------------------------------------------
-write_csv(data, "./data//02_data_preprocessing/processed_data.csv")
+write_delim(data, "./data//02_data_preprocessing/processed_data.csv", delim = "\t")
