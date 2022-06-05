@@ -10,42 +10,25 @@ import pandas as pd
 # Taken from: https://www.cancerquest.org/cancer-biology/cancer-genes
 search_genes = {
     "GOF": [
-        'ABL1', 'AFF4', 'AKAP13',
-        'AKT2', 'ALK', 'AML1',
-        'AXL', 'BCL-2', 'BCL-3',
-        'BCL-6', 'BCR', 'CAN',
-        'CBFB', 'CCND1', 'CSF1R',
-        'DEK', 'E2A', 'EGFR', 
-        'ERBB2', 'ERG', 'ETS1',
-        'EWSR1', 'FES', 'FGF3',
-        'FGF4', 'FGF4', 'FLI1',
-        'FOS', 'FUS', 'GLI1',
-        'GNAS', 'HER2', 'HRAS', 
-        'IL3', 'JUN', 'K-SAM',
-        'KIT', 'KRAS', 'LCK',
-        'LMO1', 'LMO2', 'LYL1',
-        'MAS1', 'MCF2', 'MDM2',
-        'MLLT11', 'MOS', 'MTG8', 
-        'MYB', 'MYC', 'MYCN',
-        'MYH11', 'NEU', 'NFKB2', 
-        'NFKB2', 'NOTCH1', 'NPM', 
-        'NRAS', 'NRG', 'NTRK1', 
-        'NUP214', 'PAX-5', 'PBX1', 
-        'PIM1', 'PML', 'RAF1', 
-        'RARA', 'REL', 'RET', 
-        'RHOM1', 'RHOM2', 'ROS1', 
-        'RUNX1', 'SET', 'SIS', 
-        'SKI', 'SRC', 'TAL1', 
-        'TAL2', 'TCF3', 'TIAM1', 
-        'TLX1', 'TSC2'
+        'ABL1', 'AFF4', 'AKAP13', 'AKT2', 'ALK', 'AML1',
+        'AXL', 'BCL-2', 'BCL-3', 'BCL-6', 'BCR', 'CAN',
+        'CBFB', 'CCND1', 'CSF1R', 'DEK', 'E2A', 'EGFR', 
+        'ERBB2', 'ERG', 'ETS1', 'EWSR1', 'FES', 'FGF3',
+        'FGF4', 'FLI1', 'FOS', 'FUS', 'GLI1', 'GNAS', 
+        'HER2', 'HRAS', 'IL3', 'JUN', 'K-SAM', 'KIT', 
+        'KRAS', 'LCK', 'LMO1', 'LMO2', 'LYL1','MAS1', 
+        'MCF2', 'MDM2', 'MLLT11', 'MOS', 'MTG8', 'MYB', 
+        'MYC', 'MYCN', 'MYH11', 'NEU', 'NFKB2', 'NOTCH1', 
+        'NPM', 'NRAS', 'NRG', 'NTRK1', 'NUP214', 'PAX-5', 
+        'PBX1', 'PIM1', 'PML', 'RAF1', 'RARA', 'REL', 
+        'RET', 'RHOM1', 'RHOM2', 'ROS1', 'RUNX1', 'SET', 
+        'SIS', 'SKI', 'SRC', 'TAL1', 'TAL2', 'TCF3', 
+        'TIAM1', 'TLX1', 'TSC2'
     ],
     "LOF": [
-        'APC', 'BRCA1', 'BRCA2', 
-        'CDKN2A', 'CDKN2A', 'DCC', 
-        'DPC4', 'MADR2', 'MEN1', 
-        'NF1', 'NF2', 'PTEN', 
-        'RB1', 'TP53', 'VHL', 
-        'WRN', 'WT1'
+        'APC', 'BRCA1', 'BRCA2', 'CDKN2A', 'DCC', 
+        'DPC4', 'MADR2', 'MEN1', 'NF1', 'NF2', 'PTEN', 
+        'RB1', 'TP53', 'VHL', 'WRN', 'WT1'
     ]
 }
 
@@ -72,7 +55,7 @@ data = pd.DataFrame(
 
 for gene_type in search_genes.keys():
     for gene in search_genes[gene_type]:
-        results = pubmed.query(gene, max_results=5)
+        results = pubmed.query(gene, max_results=500)
         articleList = []
         articleInfo = []
         for article in results:
