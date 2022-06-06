@@ -1,0 +1,29 @@
+---
+title: "Identifying Gene Characteristics From Literature Using Machine Learning"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This is a repository for a personal project to explore natural language processing techniques. I am trying to use articles from the MEDLINE database to identify characteristics about genes. This includes trying to find words that are associated with different genes and different types of genes. As well as (hopefully!) training an NLP based model that can take a gene and determine what type it is.
+
+## Blog Posts
+
+A complete explanation of all the methods and decisions made can be found in my blog posts
+
+- (1) [Data Collection](https://www.hwarden.com/project/mutation-nlp/identifying-gene-characteristics-from-literature-using-machine-learning-data-collection/)
+
+## Contact and Contribution
+
+This project was written by Hugh Warden, feel free to reach out to me via:
+
+- Website: [hwarden.com](www.hwarden.com)
+- E-Mail: hugh.warden@outlook.com
+- Twitter: [HughWarden1](https://twitter.com/HughWarden1)
+- GitHub: [hwarden162](https://github.com/hwarden162)
+- LinkedIn: [Hugh Warden](https://www.linkedin.com/in/hugh-warden-b95049197/)
+
+Please do get in touch with any suggestions!
+
