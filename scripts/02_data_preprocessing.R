@@ -14,13 +14,14 @@ data <- raw_data %>%
     pubmed_id,
     abstract,
     title,
-    gene_type
+    gene_type,
+    gene
   ) %>%
   summarise(
     count = n()
   ) %>%
   pivot_wider(
-    id_cols = c(pubmed_id, abstract, title),
+    id_cols = c(pubmed_id, abstract, title, gene),
     names_from = gene_type,
     values_from = count
   ) %>%
@@ -39,7 +40,8 @@ data <- raw_data %>%
     pubmed_id,
     abstract,
     title,
-    gene_type
+    gene_type,
+    gene
   )
 
 # Saving Data -------------------------------------------------------------
