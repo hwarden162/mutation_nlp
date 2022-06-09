@@ -14,14 +14,13 @@ data <- raw_data %>%
     pubmed_id,
     abstract,
     title,
-    gene_type,
-    gene
+    gene_type
   ) %>%
   summarise(
     count = n()
   ) %>%
   pivot_wider(
-    id_cols = c(pubmed_id, abstract, title, gene),
+    id_cols = c(pubmed_id, abstract, title),
     names_from = gene_type,
     values_from = count
   ) %>%
@@ -30,18 +29,15 @@ data <- raw_data %>%
     GOF = replace_na(GOF, 0),
     logScore = log2(GOF/LOF),
     gene_type = NA,
-    gene_type = replace(gene_type, logScore > 0, "GOF"),
-    gene_type = replace(gene_type, logScore < 0, "LOF")
-  ) %>%
-  filter(
-    abs(logScore) > 2
+    gene_type = replace(gene_type, logScore < 2, "LOF"),
+    gene_type = replace(gene_type, logScore > 2, "GOF"),
+    gene_type = replace(gene_type, is.na(gene_type), "Other")
   ) %>%
   select(
     pubmed_id,
     abstract,
     title,
-    gene_type,
-    gene
+    gene_type
   )
 
 # Saving Data -------------------------------------------------------------
