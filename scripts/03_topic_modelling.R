@@ -7,12 +7,12 @@ data <- read_delim("./data/02_data_preprocessing/processed_data.csv", delim = "\
 
 # Cleaning Data -----------------------------------------------------------
 # Transform the data such that each word is on one line
-data_words <- data %>%
+words <- data %>%
   unnest_tokens(word, abstract) %>%
   select(pubmed_id, word)
 
 # Filtering out unwanted words
-data_words %>%
+filtered_words <- words %>%
   # Removing common words
   anti_join(stop_words) %>%
   mutate(
@@ -38,3 +38,55 @@ data_words %>%
     !(str_detect(word, "[0-9]") & (len > 8))
   )
 
+word_count <- filtered_words %>%
+  group_by(pubmed_id) %>%
+  summarise(
+    count = n()
+  ) %>%
+  left_join(
+    data %>% select(pubmed_id, gene_type)
+  )
+
+word_count %>%
+  group_by(gene_type) %>%
+  mutate(
+    gene_type = paste0(gene_type, "\n(n=", n(), ")")
+  ) %>%
+  ggplot(
+    aes(
+      x = count,
+      y = gene_type
+    )
+  ) +
+  geom_boxplot() +
+  geom_vline(
+    xintercept = mean(word_count$count),
+    colour = "red",
+    linetype = 2,
+    size = 0.6
+  ) +
+  geom_vline(
+    xintercept = mean(word_count$count) + 1.5*sd(word_count$count),
+    colour = "blue",
+    linetype = 2,
+    size = 0.6
+  ) +
+  geom_vline(
+    xintercept = mean(word_count$count) - 1.5*sd(word_count$count),
+    colour = "blue",
+    linetype = 2,
+    size = 0.6
+  ) +
+  scale_x_log10() +
+  theme_bw() +
+  guides(
+    fill = "none"
+  ) +
+  labs(
+    x = "Number of Filtered Words in Abstract",
+    y = "Type of Gene Referenced in Article",
+    caption = "Red line represents the mean number of filtered words in abstract\nBlue lines represent one and a half standard deviations\nfrom the mean number of filtered words in abstract"
+  ) +
+  theme(
+    axis.text.y = element_text(hjust = 0.5)
+  )
