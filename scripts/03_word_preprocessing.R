@@ -97,3 +97,18 @@ word_count %>%
   theme(
     axis.text.y = element_text(hjust = 0.5)
   )
+
+filtered_articles <- word_count %>%
+  filter(
+    count < mean(count) + 1.5*sd(count),
+    count > mean(count) - 1.5*sd(count)
+  )
+
+filtered_words_vector <- filtered_words %>% select(word)
+filtered_articles_vector <- filtered_articles %>% select(pubmed_id)
+
+word_data <- words %>%
+  filter(
+    word %in% filtered_words_vector,
+    pubmed_id %in% filtered_articles_vector
+  )
