@@ -38,20 +38,25 @@ filtered_words <- words %>%
     !(str_detect(word, "[0-9]") & (len > 8))
   )
 
+# Finding the number of filtered words in each abstract
 word_count <- filtered_words %>%
   group_by(pubmed_id) %>%
   summarise(
     count = n()
   ) %>%
+  # Adding gene_type information for each article
   left_join(
     data %>% select(pubmed_id, gene_type)
   )
 
+# Plotting the number of words in each abstract per gene_type
 word_count %>%
   group_by(gene_type) %>%
+  # Adding in the number of abstracts per gene_type
   mutate(
     gene_type = paste0(gene_type, "\n(n=", n(), ")")
   ) %>%
+  # Creating a boxplot
   ggplot(
     aes(
       x = count,
@@ -59,12 +64,14 @@ word_count %>%
     )
   ) +
   geom_boxplot() +
+  # Adding a line for the mean
   geom_vline(
     xintercept = mean(word_count$count),
     colour = "red",
     linetype = 2,
     size = 0.6
   ) +
+  # Adding lines for 1.5 standard deviations from the mean
   geom_vline(
     xintercept = mean(word_count$count) + 1.5*sd(word_count$count),
     colour = "blue",
