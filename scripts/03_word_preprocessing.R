@@ -104,11 +104,41 @@ filtered_articles <- word_count %>%
     count > mean(count) - 1.5*sd(count)
   )
 
-filtered_words_vector <- filtered_words %>% select(word)
-filtered_articles_vector <- filtered_articles %>% select(pubmed_id)
+filtered_words_vector <- filtered_words$word
+filtered_articles_vector <- filtered_articles$pubmed_id
 
 word_data <- words %>%
+  anti_join(stop_words) %>%
   filter(
     word %in% filtered_words_vector,
     pubmed_id %in% filtered_articles_vector
   )
+
+word_data %>%
+  left_join(
+    data %>% select(pubmed_id, gene_type)
+  ) %>%
+  group_by(word, gene_type) %>%
+  summarise(
+    count = n()
+  ) %>%
+  ungroup() %>%
+  group_by(gene_type) %>%
+  mutate(
+    prop = count/n()
+  ) %>%
+  ggplot(
+    aes(
+      x = count,
+      fill = gene_type
+    )
+  ) +
+  geom_histogram() +
+  facet_wrap(~ gene_type, ncol = 1, scales = "free") +
+  scale_y_continuous(trans = scales::log1p_trans()) +
+  scale_x_log10() +
+  theme_bw() +
+  guides(
+    fill = "none"
+  ) +
+  scale_fill_viridis_d()
