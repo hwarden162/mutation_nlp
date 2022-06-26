@@ -27,3 +27,16 @@ This project was written by Hugh Warden, feel free to reach out to me via:
 
 Please do get in touch with any suggestions!
 
+## Session Information
+
+Here is the session information for the R parts of the project. Information on the Python modules can be found in the `environment.yml` file.
+
+```{r libraries used in project, echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(tidytext)
+```
+
+```{r printing session info, echo=FALSE}
+sessionInfo()
+```
+
