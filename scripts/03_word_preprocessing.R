@@ -1,6 +1,7 @@
 # Import Packages ---------------------------------------------------------
 library(tidyverse)
 library(tidytext)
+library(SnowballC)
 
 # Load Data ---------------------------------------------------------------
 data <- read_delim("./data/02_data_preprocessing/processed_data.csv", delim = "\t")
@@ -16,6 +17,8 @@ filtered_words <- words %>%
   # Removing common words
   anti_join(stop_words) %>%
   mutate(
+    # Make all words lower case
+    word = tolower(word),
     # Removing whitespace from before and after each word
     word = str_trim(word),
     # Finding the length of each word
@@ -36,6 +39,9 @@ filtered_words <- words %>%
     str_detect(word, "\\:", negate = TRUE),
     # Removing any words with 9 or more letters that contain a number
     !(str_detect(word, "[0-9]") & (len > 8))
+  ) %>%
+  mutate(
+    word = wordStem(word)
   )
 
 # Finding the number of filtered words in each abstract
@@ -98,22 +104,21 @@ word_count %>%
     axis.text.y = element_text(hjust = 0.5)
   )
 
+# Removing abstracts that are too long or too short
 filtered_articles <- word_count %>%
   filter(
     count < mean(count) + 1.5*sd(count),
     count > mean(count) - 1.5*sd(count)
   )
 
-filtered_words_vector <- filtered_words$word
 filtered_articles_vector <- filtered_articles$pubmed_id
 
-word_data <- words %>%
-  anti_join(stop_words) %>%
+word_data <- filtered_words %>%
   filter(
-    word %in% filtered_words_vector,
     pubmed_id %in% filtered_articles_vector
   )
 
+# Plotting word count data
 word_data %>%
   left_join(
     data %>% select(pubmed_id, gene_type)
@@ -142,3 +147,242 @@ word_data %>%
     fill = "none"
   ) +
   scale_fill_viridis_d()
+
+# Finding tf/idf per gene type
+gene_type_tf_idf <- word_data %>%
+  left_join(
+    data %>% select(pubmed_id, gene_type)
+  ) %>%
+  group_by(word, gene_type) %>%
+  summarise(count = n()) %>%
+  bind_tf_idf(word, gene_type, count) %>%
+  ungroup()
+
+# Making data frame for plotting
+p_data <- gene_type_tf_idf %>%
+  group_by(gene_type) %>%
+  arrange(-tf_idf) %>%
+  slice_head(n = 60) %>%
+  ungroup() %>%
+  mutate(
+    order = row_number()
+  )
+
+# Plotting the top tf/idf per gene type
+p_data %>%
+  filter(gene_type != "Other") %>%
+  mutate(
+    gene_type = case_when(
+      gene_type == "GOF" ~ "Gain Of Function Related Articles",
+      gene_type == "LOF" ~ "Loss Of Function Related Articles",
+    )
+  ) %>%
+  ggplot(
+    aes(
+      x = -order,
+      y = tf_idf,
+      fill = gene_type
+    )
+  ) +
+  geom_col() +
+  facet_wrap(
+    ~ gene_type,
+    ncol = 2,
+    scales = "free"
+  ) +
+  coord_flip() +
+  theme_bw() +
+  scale_x_continuous(
+    breaks = -p_data$order,
+    labels = p_data$word,
+    expand = c(0,0)
+  ) +
+  guides(
+    fill = "none"
+  ) +
+  labs(
+    y = "Term Frequency-Inverse Document Frequency",
+    x = "Word"
+  )
+
+# Finding tf/idf per article
+article_tf_idf <- word_data %>%
+  group_by(pubmed_id, word) %>%
+  summarise(count = n()) %>%
+  bind_tf_idf(word, pubmed_id, count) %>%
+  ungroup()
+
+# Making data for plot
+p_data <- article_tf_idf %>%
+  group_by(pubmed_id) %>%
+  arrange(-tf_idf) %>%
+  slice_head(n = 50) %>%
+  left_join(
+    data %>% select(pubmed_id, gene_type)
+  ) %>%
+  ungroup() %>%
+  group_by(word, gene_type) %>%
+  summarise(count = n()) %>%
+  ungroup() %>%
+  filter(gene_type != "Other") %>%
+  group_by(gene_type) %>%
+  arrange(-count) %>%
+  slice_head(n = 60) %>%
+  ungroup() %>%
+  mutate(
+    order = -row_number()
+  )
+
+# Plotting top recurring tf/idf words per gene type
+p_data %>%
+  mutate(
+    gene_type = case_when(
+      gene_type == "GOF" ~ "Gain Of Function Associated Article",
+      gene_type == "LOF" ~ "Loss Of Function Associated Article"
+    )
+  ) %>%
+  ggplot(
+    aes(
+      x = order,
+      y = count,
+      fill = gene_type
+    )
+  ) +
+  geom_col() +
+  coord_flip() +
+  theme_bw() +
+  facet_wrap(
+    ~ gene_type,
+    ncol = 2,
+    scales = "free"
+  ) +
+  guides(
+    fill = "none"
+  ) +
+  scale_x_continuous(
+    breaks = p_data$order,
+    labels = p_data$word,
+    expand = c(0,0)
+  ) +
+  labs(
+    x = "Word",
+    y = "Number Of Times Word Appears In Top 50 TF-IDF Scores Of Abstract"
+  )
+
+# Finding the top tf/idf words in both gene types
+top_tf_idf_words <- p_data <- article_tf_idf %>%
+  group_by(pubmed_id) %>%
+  arrange(-tf_idf) %>%
+  slice_head(n = 50) %>%
+  left_join(
+    data %>% select(pubmed_id, gene_type)
+  ) %>%
+  ungroup() %>%
+  group_by(word, gene_type) %>%
+  summarise(count = n()) %>%
+  ungroup() %>%
+  filter(gene_type != "Other") %>%
+  group_by(gene_type) %>%
+  arrange(-count) %>%
+  slice_head(n = 250) %>%
+  ungroup() %>%
+  group_by(word) %>%
+  summarise(count = n()) %>%
+  filter(count == 2)
+
+# Removing shared top tf/idf words
+word_data <- word_data %>%
+  anti_join(top_tf_idf_words)
+
+# Word Preprocessing
+final_words <- words %>%
+  # Removing common words
+  anti_join(stop_words) %>%
+  mutate(
+    # Removing whitespace from before and after each word
+    word = str_trim(word),
+    # Finding the length of each word
+    len = str_length(word)
+  ) %>%
+  filter(
+    # Keeping only words that contain at least one letter
+    str_detect(word, "[A-Za-z]"),
+    # Keeping words with three or more letters
+    len > 2,
+    # Removing words that start with a number
+    str_starts(word, "[0-9]", negate = TRUE),
+    # Removing words that contain whitespace
+    str_detect(word, "\\s+", negate = TRUE),
+    # Removing words containing specific pieces of punctuation
+    str_detect(word, "\\.", negate = TRUE),
+    str_detect(word, "\\_", negate = TRUE),
+    str_detect(word, "\\:", negate = TRUE),
+    # Removing any words with 9 or more letters that contain a number
+    !(str_detect(word, "[0-9]") & (len > 8))
+  ) %>%
+  # Removing articles with abstracts that are too short or too long
+  filter(
+    pubmed_id %in% filtered_articles_vector
+  ) %>%
+  # Removing words that appear often in the tf/idf of articles from both gene types
+  anti_join(top_tf_idf_words)
+
+p_data <- final_words %>%
+  select(pubmed_id, word) %>%
+  group_by(pubmed_id, word) %>%
+  summarise(count = n()) %>%
+  bind_tf_idf(word, pubmed_id, count) %>%
+  arrange(-tf_idf) %>%
+  slice_head(n = 10) %>%
+  ungroup() %>%
+  left_join(
+    data %>% select(pubmed_id, gene_type)
+  ) %>%
+  filter(
+    gene_type != "Other"
+  ) %>%
+  group_by(gene_type) %>%
+  slice_head(n = 60) %>%
+  ungroup() %>%
+  mutate(
+    order = -row_number()
+  )
+
+p_data %>%
+  mutate(
+    pubmed_id = paste("Article ID:", pubmed_id),
+    gene_type = case_when(
+      gene_type == "GOF" ~ "Gain Of Function",
+      gene_type == "LOF" ~ "Loss Of Function"
+    )
+  ) %>%
+  ggplot(
+    aes(
+      x = order,
+      y = tf_idf,
+      fill = gene_type
+    )
+  ) +
+  geom_col() +
+  coord_flip() +
+  facet_wrap(
+    ~ pubmed_id,
+    ncol = 4,
+    scales = "free"
+  ) +
+  theme_bw() +
+  scale_x_continuous(
+    breaks = p_data$order,
+    labels = p_data$word,
+    expand = c(0,0)
+  ) +
+  labs(
+    x = "Word",
+    y = "Term Frequency - Inverse Document Frequency",
+    fill = "Gene Type:"
+  ) +
+  theme(
+    legend.position = "bottom"
+  )
+
+
