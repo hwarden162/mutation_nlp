@@ -321,7 +321,10 @@ final_words <- words %>%
     pubmed_id %in% filtered_articles_vector
   ) %>%
   # Removing words that appear often in the tf/idf of articles from both gene types
-  anti_join(top_tf_idf_words)
+  anti_join(top_tf_idf_words) %>%
+  select(
+    -len
+  )
 
 p_data <- final_words %>%
   select(pubmed_id, word) %>%
