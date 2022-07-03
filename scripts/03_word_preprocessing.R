@@ -381,4 +381,6 @@ p_data %>%
     legend.position = "bottom"
   )
 
+# Saving Data -------------------------------------------------------------
+saveRDS(final_words, "./data/03_word_preprocessing/word_data.rds")
 
