@@ -1,7 +1,6 @@
 # Import Packages ---------------------------------------------------------
 library(tidyverse)
 library(tidytext)
-library(SnowballC)
 
 # Load Data ---------------------------------------------------------------
 data <- read_delim("./data/02_data_preprocessing/processed_data.csv", delim = "\t")
@@ -39,9 +38,6 @@ filtered_words <- words %>%
     str_detect(word, "\\:", negate = TRUE),
     # Removing any words with 9 or more letters that contain a number
     !(str_detect(word, "[0-9]") & (len > 8))
-  ) %>%
-  mutate(
-    word = wordStem(word)
   )
 
 # Finding the number of filtered words in each abstract
